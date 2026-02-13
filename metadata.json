@@ -1,0 +1,5 @@
+{
+  "name": "Gestão de Turnos",
+  "description": "Uma ferramenta de fluxo único para gestão de turnos, integrando abertura, execução e encerramento com inteligência artificial para análise de produtividade.",
+  "requestFramePermissions": []
+}
