@@ -208,7 +208,7 @@ const AppContent: React.FC = () => {
 
         {stage === 'REGISTRY' && <RegistryScreen onBack={() => setStage('START')} sheetsUrl={sheetsUrl} registries={registries} onUpdateRegistries={updateRegistries} />}
         {stage === 'ROUTING' && <RoutingDashboard onBack={() => setStage('START')} registries={registries} />}
-        {stage === 'PLANNING_VIEW' && <PlanningViewScreen onBack={() => setStage('START')} />}
+        {stage === 'PLANNING_VIEW' && <PlanningViewScreen onBack={() => setStage('START')} registries={registries} />}
         {stage === 'DASHBOARD' && <Dashboard history={historyData} onBack={() => setStage('START')} onRefresh={() => fetchCloudData(false)} />}
         
         {stage === 'START' && <StartStage data={data} updateData={updateData} sheetsUrl={sheetsUrl} registries={registries} />}
@@ -246,3 +246,4 @@ const App: React.FC = () => (
 );
 
 export default App;
+
