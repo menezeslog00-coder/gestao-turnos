@@ -40,25 +40,12 @@ const CircularProgress: React.FC<{ percent: number; color: string; bgColor?: str
   return (
     <div className="relative inline-flex items-center justify-center w-20 h-20 flex-shrink-0">
       <svg className="transform -rotate-90 w-full h-full">
+        <circle cx="40" cy="40" r={radius} stroke={bgColor} strokeWidth="6" fill="transparent" />
         <circle
-          cx="40"
-          cy="40"
-          r={radius}
-          stroke={bgColor}
-          strokeWidth="6"
-          fill="transparent"
-        />
-        <circle
-          cx="40"
-          cy="40"
-          r={radius}
-          stroke={color}
-          strokeWidth="6"
-          fill="transparent"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          className="transition-all duration-1000 ease-out"
+          cx="40" cy="40" r={radius}
+          stroke={color} strokeWidth="6" fill="transparent"
+          strokeDasharray={circumference} strokeDashoffset={offset}
+          strokeLinecap="round" className="transition-all duration-1000 ease-out"
         />
       </svg>
       <span className="absolute text-xs font-bold tabular-nums">{percent}%</span>
@@ -150,6 +137,13 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: Regi
   const percRot = totalCD > 0 ? Math.round((totals.totalRot / totalCD) * 100) : 0;
   const percRota = totalCD > 0 ? Math.round((totals.emRota / totalCD) * 100) : 0;
 
+  // Converte horas decimais (ex: 5.3) para formato HH:MM (ex: 05:18)
+  const formatHoursToHHMM = (decimalHours: number): string => {
+    const h = Math.floor(decimalHours);
+    const m = Math.round((decimalHours - h) * 60);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
   const calculateTimeToFinish = (totalRotStr: string, stationName: string) => {
     const totalRot = parseInt(totalRotStr.replace(/\./g, '').replace(',', '.')) || 0;
     if (totalRot <= 0) return '—';
@@ -159,12 +153,12 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: Regi
 
     const totalHours = totalRot / targetPPH;
     const days = Math.floor(totalHours / 8);
-    const hours = totalHours % 8;
+    const remainingHours = totalHours % 8;
 
     if (days > 0) {
-      return `${days}d ${hours.toFixed(1)}h`;
+      return `${days}d ${formatHoursToHHMM(remainingHours)}`;
     }
-    return `${hours.toFixed(1)}h`;
+    return formatHoursToHHMM(remainingHours);
   };
 
   return (
@@ -212,7 +206,6 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: Regi
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-neutral-600 mb-2 uppercase tracking-wide">Data</label>
-                {/* Fix: Added required 'label' prop to Select component to resolve TypeScript error */}
                 <Select 
                   label=""
                   value={selectedDate} 
@@ -223,7 +216,6 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: Regi
               </div>
               <div>
                 <label className="block text-xs font-semibold text-neutral-600 mb-2 uppercase tracking-wide">Horário</label>
-                {/* Fix: Added required 'label' prop to Select component to resolve TypeScript error */}
                 <Select 
                   label=""
                   value={selectedTime} 
@@ -240,7 +232,6 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: Regi
                 >
                   Aplicar
                 </Button>
-                {/* Fix: Updated invalid 'outline' variant to 'secondary' to resolve TypeScript error */}
                 <Button 
                   variant="secondary" 
                   onClick={() => setRawData([])} 
@@ -299,27 +290,13 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: Regi
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-neutral-100">
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wide">
-                            Estação
-                          </th>
-                          <th className="px-4 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wide">
-                            Transf
-                          </th>
-                          <th className="px-4 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wide">
-                            Embarque
-                          </th>
-                          <th className="px-4 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wide">
-                            Desc.
-                          </th>
-                          <th className="px-6 py-3 text-right text-xs font-semibold text-blue-700 uppercase tracking-wide bg-blue-50/50">
-                            P/ Roteirizar
-                          </th>
-                          <th className="px-6 py-3 text-right text-xs font-semibold text-indigo-700 uppercase tracking-wide bg-indigo-50/50">
-                            Tempo p/ Finalizar
-                          </th>
-                          <th className="px-6 py-3 text-right text-xs font-semibold text-emerald-700 uppercase tracking-wide bg-emerald-50/50">
-                            Em Rota
-                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wide">Estação</th>
+                          <th className="px-4 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wide">Transf</th>
+                          <th className="px-4 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wide">Embarque</th>
+                          <th className="px-4 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wide">Desc.</th>
+                          <th className="px-6 py-3 text-right text-xs font-semibold text-blue-700 uppercase tracking-wide bg-blue-50/50">P/ Roteirizar</th>
+                          <th className="px-6 py-3 text-right text-xs font-semibold text-indigo-700 uppercase tracking-wide bg-indigo-50/50">Tempo p/ Finalizar</th>
+                          <th className="px-6 py-3 text-right text-xs font-semibold text-emerald-700 uppercase tracking-wide bg-emerald-50/50">Em Rota</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-neutral-100">
@@ -328,15 +305,9 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: Regi
                             <td className="px-6 py-3.5 font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors">
                               {row.station}
                             </td>
-                            <td className="px-4 py-3.5 text-center text-neutral-500 font-medium tabular-nums">
-                              {row.transf}
-                            </td>
-                            <td className="px-4 py-3.5 text-center text-neutral-500 font-medium tabular-nums">
-                              {row.embarque}
-                            </td>
-                            <td className="px-4 py-3.5 text-center text-neutral-500 font-medium tabular-nums">
-                              {row.descarregado}
-                            </td>
+                            <td className="px-4 py-3.5 text-center text-neutral-500 font-medium tabular-nums">{row.transf}</td>
+                            <td className="px-4 py-3.5 text-center text-neutral-500 font-medium tabular-nums">{row.embarque}</td>
+                            <td className="px-4 py-3.5 text-center text-neutral-500 font-medium tabular-nums">{row.descarregado}</td>
                             <td className="px-6 py-3.5 text-right font-bold text-neutral-900 bg-blue-50/30 tabular-nums">
                               {row.totalRot === '0' ? <span className="text-neutral-300">—</span> : row.totalRot}
                             </td>
@@ -367,18 +338,10 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: Regi
               <div className="bg-neutral-900 rounded-xl p-6 text-white">
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex-1">
-                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">
-                      P/ Roteirizar
-                    </p>
-                    <h2 className="text-4xl font-bold tabular-nums tracking-tight">
-                      {totals.totalRot.toLocaleString()}
-                    </h2>
+                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">P/ Roteirizar</p>
+                    <h2 className="text-4xl font-bold tabular-nums tracking-tight">{totals.totalRot.toLocaleString()}</h2>
                   </div>
-                  <CircularProgress 
-                    percent={percRot} 
-                    color="#3b82f6" 
-                    bgColor="rgba(255,255,255,0.1)"
-                  />
+                  <CircularProgress percent={percRot} color="#3b82f6" bgColor="rgba(255,255,255,0.1)" />
                 </div>
                 <div className="pt-4 border-t border-neutral-800">
                   <p className="text-xs text-neutral-500 font-medium">Volume Pendente</p>
@@ -389,18 +352,10 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: Regi
               <div className="bg-blue-600 rounded-xl p-6 text-white">
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex-1">
-                    <p className="text-xs font-semibold text-blue-200 uppercase tracking-wide mb-1">
-                      Em Rota
-                    </p>
-                    <h2 className="text-4xl font-bold tabular-nums tracking-tight">
-                      {totals.emRota.toLocaleString()}
-                    </h2>
+                    <p className="text-xs font-semibold text-blue-200 uppercase tracking-wide mb-1">Em Rota</p>
+                    <h2 className="text-4xl font-bold tabular-nums tracking-tight">{totals.emRota.toLocaleString()}</h2>
                   </div>
-                  <CircularProgress 
-                    percent={percRota} 
-                    color="#ffffff" 
-                    bgColor="rgba(255,255,255,0.2)"
-                  />
+                  <CircularProgress percent={percRota} color="#ffffff" bgColor="rgba(255,255,255,0.2)" />
                 </div>
                 <div className="pt-4 border-t border-blue-500">
                   <p className="text-xs text-blue-200 font-medium">Volume em Trânsito</p>
@@ -410,9 +365,7 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: Regi
               {/* Card 3: Total Consolidado */}
               <div className="bg-white rounded-xl border-2 border-neutral-200 p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-semibold text-neutral-600 uppercase tracking-wide">
-                    Total CD
-                  </p>
+                  <p className="text-xs font-semibold text-neutral-600 uppercase tracking-wide">Total CD</p>
                   <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center">
                     <CheckCircle2 size={18} className="text-emerald-600" strokeWidth={2.5} />
                   </div>
@@ -429,20 +382,12 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: Regi
               <div className="bg-neutral-50 rounded-xl border border-neutral-200 p-5">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center pb-3 border-b border-neutral-200">
-                    <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
-                      Snapshot
-                    </span>
-                    <span className="text-sm font-bold text-blue-600 tabular-nums">
-                      {selectedTime || '—'}
-                    </span>
+                    <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Snapshot</span>
+                    <span className="text-sm font-bold text-blue-600 tabular-nums">{selectedTime || '—'}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
-                      Data
-                    </span>
-                    <span className="text-sm font-bold text-neutral-900 tabular-nums">
-                      {selectedDate || '—'}
-                    </span>
+                    <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Data</span>
+                    <span className="text-sm font-bold text-neutral-900 tabular-nums">{selectedDate || '—'}</span>
                   </div>
                 </div>
               </div>
