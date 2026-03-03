@@ -2,9 +2,10 @@ import React, { useState, useMemo, useRef } from 'react';
 import { Card, CardContent, Select, Button } from '../components/ui';
 import { 
   X, Table, Calendar, Clock, Upload, 
-  FileSpreadsheet, Search, Filter, BarChart3, CheckCircle2 
+  FileSpreadsheet, Search, Filter, BarChart3, CheckCircle2, Timer 
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { RegistryData } from '../types';
 
 interface CsvRow {
   date: string;
@@ -65,7 +66,7 @@ const CircularProgress: React.FC<{ percent: number; color: string; bgColor?: str
   );
 };
 
-export const PlanningViewScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+export const PlanningViewScreen: React.FC<{ onBack: () => void; registries: RegistryData }> = ({ onBack, registries }) => {
   const [rawData, setRawData] = useState<CsvRow[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -131,7 +132,7 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void }> = ({ onBack })
     reader.readAsText(file);
   };
 
-  const availableDates = useMemo(() => Array.from(new Set(rawData.map(r => r.date))).sort((a, b) => b.localeCompare(a)), [rawData]);
+  const availableDates = useMemo(() => Array.from(new Set(rawData.map(r => r.date))).sort((a, b) => (b as string).localeCompare(a as string)), [rawData]);
   const availableTimes = useMemo(() => selectedDate ? Array.from(new Set(rawData.filter(r => r.date === selectedDate).map(r => r.time))).sort() : [], [rawData, selectedDate]);
   const filteredRows = useMemo(() => selectedDate && selectedTime ? rawData.filter(r => r.date === selectedDate && r.time === selectedTime) : [], [rawData, selectedDate, selectedTime]);
 
@@ -148,6 +149,23 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void }> = ({ onBack })
   const totalCD = totals.totalRot + totals.emRota;
   const percRot = totalCD > 0 ? Math.round((totals.totalRot / totalCD) * 100) : 0;
   const percRota = totalCD > 0 ? Math.round((totals.emRota / totalCD) * 100) : 0;
+
+  const calculateTimeToFinish = (totalRotStr: string, stationName: string) => {
+    const totalRot = parseInt(totalRotStr.replace(/\./g, '').replace(',', '.')) || 0;
+    if (totalRot <= 0) return '—';
+
+    const station = registries.stations.find(s => s.name.trim().toUpperCase() === stationName.trim().toUpperCase());
+    const targetPPH = station ? station.targetPPH : 200;
+
+    const totalHours = totalRot / targetPPH;
+    const days = Math.floor(totalHours / 8);
+    const hours = totalHours % 8;
+
+    if (days > 0) {
+      return `${days}d ${hours.toFixed(1)}h`;
+    }
+    return `${hours.toFixed(1)}h`;
+  };
 
   return (
     <div className="min-h-screen bg-neutral-50 p-6 md:p-8 lg:p-10">
@@ -296,6 +314,9 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void }> = ({ onBack })
                           <th className="px-6 py-3 text-right text-xs font-semibold text-blue-700 uppercase tracking-wide bg-blue-50/50">
                             P/ Roteirizar
                           </th>
+                          <th className="px-6 py-3 text-right text-xs font-semibold text-indigo-700 uppercase tracking-wide bg-indigo-50/50">
+                            Tempo p/ Finalizar
+                          </th>
                           <th className="px-6 py-3 text-right text-xs font-semibold text-emerald-700 uppercase tracking-wide bg-emerald-50/50">
                             Em Rota
                           </th>
@@ -318,6 +339,9 @@ export const PlanningViewScreen: React.FC<{ onBack: () => void }> = ({ onBack })
                             </td>
                             <td className="px-6 py-3.5 text-right font-bold text-neutral-900 bg-blue-50/30 tabular-nums">
                               {row.totalRot === '0' ? <span className="text-neutral-300">—</span> : row.totalRot}
+                            </td>
+                            <td className="px-6 py-3.5 text-right font-bold text-indigo-700 bg-indigo-50/30 tabular-nums">
+                              {calculateTimeToFinish(row.totalRot, row.station)}
                             </td>
                             <td className="px-6 py-3.5 text-right font-bold text-neutral-900 bg-emerald-50/30 tabular-nums">
                               {row.emRota === '0' ? <span className="text-neutral-300">—</span> : row.emRota}
