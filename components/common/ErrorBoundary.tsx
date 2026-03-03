@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
 import { Button } from '../ui';
 
 interface Props {
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 interface State {
@@ -12,14 +12,15 @@ interface State {
   error?: Error;
 }
 
-// Fix: Explicitly extend React.Component with Props and State to ensure 'state' and 'props' are correctly recognized by TypeScript
-export class ErrorBoundary extends React.Component<Props, State> {
-  // Fix: Standard class component constructor ensures state is correctly initialized on the instance after calling super(props)
+export class ErrorBoundary extends Component<Props, State> {
+  public props: Props;
+  public state: State = {
+    hasError: false
+  };
+
   constructor(props: Props) {
     super(props);
-    this.state = {
-      hasError: false
-    };
+    this.props = props;
   }
 
   // Fix: Use static method to update state when an error occurs during rendering
